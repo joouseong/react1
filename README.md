@@ -152,3 +152,101 @@ React에서 컴포넌트와 HTML 태그를 어떻게 렌더링?
 * React에서는 소문자로 시작하는 `<section>`은 HTML로
 * 대문자로 시작하는 `<MyTitle>`은 컴포넌트로 인식
 
+### Default Export와 Named Export의 차이
+* 두 가지 선언 방식의 차이는 default 키워드의 사용 여부
+* 두 가지 방법 모두 한 파일에서 사용할 수도 있음
+* 주의할 점은 하나의 파일에는 하나의 default export만 존재할 수 있고, named export는 여러개 존재 가능
+* default는 별칭 사용이 가능하지만 named는 불가능
+
+Default import의 사용
+* import 키워드 다음에 다른 이름으로 변수명을 선언할 수 있음
+* 이 이름을 로컬 식별자 혹은 변수명이라고 함
+* 예를 들어 import Banana from './Button'라고 선언하면, 이 파일안에서는 Banana라는 이름으로 사용할 수 있음
+* 변수명은 대문자로 시작해야 함
+
+named import를 사용
+* export하는 곳과 import하는 곳의 컴포넌트의 이름이 같아야 함
+* 모듈에 여러 개의 named 컴포넌트가 있을 경우 전부 혹은 일부만 import해서 사용할 수 있음
+
+### Named Export의 다양한 사용법
+
+Named Export한 경우 4가지 방법으로 import 가능
+1. 1개의 컴포넌트만 import하는 경우, 중괄호{} 안에 컴포넌트 이름을 넣음
+2. 2개 이사의 컴포넌트를 import하는 경우, 중괄호 안에 콤마로 구분
+3. Default Export 컴포넌트처럼 변수 명을 바꾸고 싶을 때는 as 키워드 사용
+4. 모든 컴포넌트를 가져올 때는 스타 기호( * )와 Namespace import 방식을 사용
+
+실습
+``` jsx
+export function NamedComponent1 () {
+    return(
+        <>
+            <h1>네임드 1</h1>
+        </>
+    )
+}
+
+export function NamedComponent2 () {
+    return(
+        <>
+            <h1>네임드 2</h1>
+        </>
+    )
+}
+
+export function NamedComponent3 () {
+    return(
+        <>
+            <h1>네임드 3</h1>
+        </>
+    )
+}
+```
+``` jsx
+// import { NamedComponent1 } from "./NamedComponent" //방법 1
+// import { NamedComponent1, NamedComponent3 } from "./NamedComponent" //방법 2
+// import { NamedComponent1 as Foo, NamedComponent3 as Bar } from "./NamedComponent" //방법 3
+import * as Foo from "./NamedComponent" //방법 4
+
+export default function NamedComponentTest() {
+    return(
+        <>
+            <h1>Named Component Test</h1>
+            <Foo.NamedComponent1 />
+            <Foo.NamedComponent2 />
+            <Foo.NamedComponent3 />
+        </>
+    )
+}
+```
+
+Named Export를 권장하는 이유
+* 일관성: 팀원 모두가 같은 컴포넌트를 같은 이름으로 부르게 됨
+* 리팩토링 용이성: 컴포넌트 이름을 바꿀 때, 에디터가 연결된 모든 파일의 이름을 한꺼번에 안전한게 바꿔줌
+* 트리 쉐이킹(Tree Shaking): 사용하지 않는 코드를 제거하는 과정에서 Named Export가 더 유리한 경우가 많음
+
+어떤 방식을 사용하든 컴포넌트와 파일의 이름을 의미있게 명명하는 것이 매우 중요
+
+### JSX로 마크업 작성하기
+JSX란 무엇인가?
+* JSX는 JavaScript를 확장한 문법으로, Java Script 파일을 HTML과 비슷한 형태의 마크업을 작성할 수 있도록 해줌
+* 컴포넌트를 작성하는 다른 방법도 있지만, JSX의 간결함 때문에 대부분의 React 개발자가 선호
+<br>
+<br>
+* HTML, CSS, JavaScript 코드는 일반적으로 분리되 파일로 관리
+* 그러나 Web이 더욱 인터랙티브 해지며, 로직이 내용을 결정하는 경우가 많아짐
+* 따라서 효율적인 렌더링을 위해 로직을 담당하는 JavaScript가 HTML을 담당하는 것이 좋음
+* React의 컴포넌트가 좋은 예
+<br>
+<br>
+* 버튼(input 태그)의 렌더린 로직과 마크업이 함께 있으면, 매번 변화가 생길 때마다 서로 동기화 상태를 유지할 수 있음
+* 반대로 버튼의 마크업과 사이드바의 마크업처럼 관련이 없는 항목들은 서로 분리되어 있어 각각 개별적으로 변경할 수 있어 안전한 관리 가능
+* 즉 React 컴포넌트는 JavaScript 함수로 작성되며, 이 로직과 함께 JSX라는 확장된문법으로 마크업 작성
+*JSX는 HTML과 비슷해 보이지만 조금 더 엄격하게 적용, 동적으로 정보를 표시 가능
+
+JSX의 3가지 규칙
+1. 하나의 루트 엘리먼트로 반환해야 함
+2. 모든 태그는 닫아줘야 함
+3. 속성(attribute)는 카멜 케이스(camelCase)로 작성
+* 파스칼 케이스(PascalCase): 첫 단어부터 대문자로 시작, React 컴포넌트의 이름에 사용
+* 카멜 케이스(camelCase): 첫 단어는 소문자로 시작, 두 번째 단어부터 대문자 시작. JSX의 속성 이름에 사용
