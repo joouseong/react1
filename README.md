@@ -1,5 +1,79 @@
 # 주우성 202230236
 ---
+## 4월 1일(5주차)
+### JSX로 마크업 작성하기
+* 태그(Tag)는 HTML과 같은 마크업에서 요소를 표시하기 위한 개별 기호를 의미함. `<div>`,`<li>` 등이 있음
+* 엘리먼트(Elememt)는 DOM의 구성 단위로 "여는 태그 + 내용(Content) + 닫는 태그" 전체를 의미하는 개념. DOM 노드라고도 함. 예를 들어 `<p>` 엘리먼트 설명 `</p>`의 형태
+* 어트리뷰트(속성)는 태그의 행동을 제어하거나, 엘리먼트에 추가적인 정보(데이터)를 제공하기 위해 여는 태그 안에 사용되는 특수 명령어. 예를 들어 `<img>`태그의 src같은 정적 속성 같은 것
+* Property(프로퍼티)는 DOM 트리의 객체 내부에 존재하는 동적인 속성. 프로퍼티는 JavaScript로 제어할 수 있으며, 현재의 동적 상태를 의미
+  - 예를 들어 사용자가 input 태그에 글자를 입력하면, 해당 input 요소의 Property(value)는 변경되지만, HTML의 Attribute(value)는 처음 입력된 값 그대로 남아있음
+<br>
+
+JSX 안에서 자바스크립트 사용하기
+* JavaScript를 JSX에서 사용하는 방법은 4가지
+  1. 따옴표로 문자열을 전달하는 방법
+  2. 중괄호를 이용해서 JavaScript 변수를 참조하는 방법
+  3. 중괄호를 이용해서 JavaScript 함수를 호출하는 방법
+  4. 중괄호를 이용해서 JavaScript 객체를 적용하는 방법
+``` jsx
+export default function UseJsx () {
+    const name = "React"
+    return (
+        <>
+            <h1>Hello, {name}</h1>
+        </>
+    )
+}
+```
+
+``` jsx
+export default function UseJsx () {
+    const name = "React"
+
+    function formatDate(date){
+        return new Intl.DateTimeFormat(
+            "en-US", {weekday: "long"}
+        ).format(date);
+    }
+
+    return (
+        <>
+            <h1>Hello, {name}</h1>
+            <p>Today is {formatDate(new Date())}</p>
+        </>
+    )
+}
+```
+
+### 데이터 전달과 렌더링
+개요
+* React 컴포넌트는 props를 이용해 서로 통신
+* 부모 컴포넌트는 자식 컴포넌트에게 props를 통해 데이터를 전달
+* props는 HTML의 속성과 비슷해 보이지만 객체, 배열, 함수를 포함한 모든 JavaScript 값을 전달 할 수 있음
+
+Props의 데이터 전달
+* Props는 부모 컴포넌트가 자식 컴포넌트에게 전달되는 데이터 꾸러미라고 할 수 있음
+* React에서는 props를 통해 JSX 태그에 정보를 전달
+  * 예를 들어 src, alt, width, height으 속성값을 `<img>`태그에 전달할 수 있음
+* `<img>`태그에 전달할 수 있는 props는 HTML 표준으로 이미 정의되어 있음
+  * HTML 문서를 작성할 때와 동일
+
+컴포넌트에 props 전달하기
+* 부모 컴포넌트
+  - 자식 컴포넌트를 자신의 구조 안에 포함(Import 및 호출)하고, 데티러르 전달(props)하는 컴포넌트
+* 자식 컴포넌트
+  - 부모 컴포넌트로부터 전달받은 props를 통해 구체적인 UI를 만들어서 부모 컴포넌트에 다시 반환
+  - 독립적으로 재사용될 수 있음
+
+* Props의 특징
+  * 일방통행
+  * 읽기 전용
+  * 다양한 타입
+
+실습
+
+
+---
 ## 3월 25일(4주차)
 ### Vite에서 SWC가 사라진 이유
 프로젝트의 설정 확인
