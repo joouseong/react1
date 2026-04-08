@@ -1,5 +1,163 @@
 # 주우성 202230236
 ---
+## 4월 8일(6주차)
+### 데이터 전달과 렌더링
+조건부 렌더링
+* 컴포넌트는 조건에 따라 다른 항목을 표시해야 하는 경우가 많음
+* React는 if문, 삼항 연산자와 같은 자바스크립트 문법을 사용하여 조건부로 JSX를 렌더링 할 수 있음
+
+조건부로 JSX 반환하기[실습] <br>
+
+isPacked가 true면 ✅ 표시하기
+``` jsx
+import Items from "./Items"
+
+export default function PackingList() {
+    return(
+        <section>
+            <h1>여행 짐 리스트</h1>
+            <ul>
+                <Items 
+                isPacked={false}
+                name="여분 옷"
+                />
+                <Items 
+                isPacked={false}
+                name="노트북"
+                />
+                <Items 
+                isPacked={true}
+                name="컵라면"
+                />
+            </ul>
+        </section>
+    )
+}
+```
+``` jsx
+export default function Items({name, isPacked}) {
+    if(isPacked) {
+        return <li>{name}✅</li>
+    }
+    return <li>{name}</li>
+}
+```
+* 조건문에 중복되는 코드 `return <li>{name}</li>`가 존재<br>
+* 유지 보수를 더 어렵게 만들 수 있음
+
+
+삼항 연산자를 사용하여 중복 코드 제거하기
+``` jsx
+// 삼항 연산자를 사용하여 중복 코드 제거하기(방법 1)
+export default function Items({name, isPacked}) {
+    return <li>{name} {isPacked ? "✅" : ""}</li>
+}
+```
+``` jsx
+// 삼항 연산자를 사용하여 중복 코드 제거하기(방법 2)
+export default function Items({name, isPacked}) {
+    return(
+      <li>
+          {isPacked ? name + '✅' : name}
+      </li>
+    )
+}
+```
+
+`<del>` 태그 추가하기
+``` jsx
+export default function Items({name, isPacked}) {
+    return(
+      <li>
+          {isPacked ? (<del>{name + '✅'}</del>) : (name)}
+      </li>
+    )
+}
+```
+
+논리 연산자 AND(&&) 사용하기
+* if문이나 삼항 연산자를 사용하는 방법 외에 일반적으로 사용하는 또 다른 방법은 JavaScript 논리연산자 사용하는 것
+* React 컴포넌트에서는 조건이 참일 때 일부 JSX를 렌더링하고, 거짓이면 아무것도 렌더링하지 않는 경우가 많음
+```jsx
+// && 연산자 사용
+export default function Items({name, isPacked}) {
+    return(
+        <li>
+        {name} {isPacked && '✅'}
+        </li>
+    )
+}
+```
+* JavaScript &&표현식은 왼쪽이 true면 오른쪽의 값을 반환, 그러나 조건이 false면 전체 표현식이 false가 됨
+* React는 false를 null 또는 undefined처럼 JSX 트리의 "구멍"으로 간주하고 그자리에 아무것도 렌더링하지 않음
+* && 왼쪽에 숫자를 두면 안됨
+* JavaScript는 조건을 테스트하기 위해 표현식 왼쪽을 자동으로 부울(bool)로 변환. 그러나 왼쪽이 숫자 0이면 전체 식이(0)을 얻게 되고, React는 0을 렌더링
+
+변수에 조건부로 JSX를 할당하기
+* 지금까지의 방법이 방해가 되거나 불편하다면, if문과 변수를 함께 사용하면 좋음
+``` jsx
+// 변수에 조건부로 JSX를 할당하기
+export default function Items({name, isPacked}) {
+    let itemContent = name;
+    if(isPacked) {
+        itemContent = <del>{name + "✅"}</del>
+    }
+    return(
+        <li>
+            {itemContent}
+        </li>
+    )
+}
+```
+* let으로 정의된 변수는 재할당할 수 있으므로 표시할 기본 내용인 name을 먼저 대입
+* 다음으로 if문을 사용하여 isPacked가 true인 경우 JSX 표현식을 itemContent에 다시 할당
+* return문의 JSX 트리에 중괄호를 사용, 위의 if문에서 계산된 변수 itemContent를 JSX 내부에 중첩하여 포함
+
+리스트 렌더링
+* 컴포넌트에서 여러 개의 데이터를 같은 형식으로 출력해야 하는 경우가 있음
+* 이럴 때 JavaScript의 배열 관련 함수를 사용해, 배열을 컴포넌트의 기능에 맞게 렌더링할 수 있음
+
+배열을 데이터로 렌더링하기
+``` jsx
+<ul>
+  <li>스파이더맨: 피터 파커</li>
+  <li>아이언맨: 토니 스타크</li>
+  <li>배트맨: 브루스 웨인</li>
+  <li>슈퍼맨: 클라크 켄트</li>
+  <li>헐크: 브루스 배너</li>
+</ul>
+```
+* 이러한 형식의 리스트 항목의 특이한 점은 콘텐츠, 즉 데이터
+* 댓글 목록이나 이밎 갤러리 등의 인터페이스를 구축할 때 자주 사용되는 형태
+  * 이런 경우 컴포넌트의 목록에 있는 데이터를 각각의 객체로 표시해야 함
+* 즉 해당 데이터를 JavaScript 배열에 저장해야, map()과 filter() 같은 함수를 사용해서 리스트를 렌더링 할 수 있음
+
+``` jsx
+const heroes = [
+        '스파이더맨: 피터 파커',
+        '아이언맨: 토니 스타크',
+        '배트맨: 브루스 웨인',
+        '슈퍼맨: 클라크 켄트',
+        '헐크: 로버트 브루스 배너'
+    ];
+
+export default function MovieHeroes() {
+    const listHeroes = heroes.map(hero => <li>{hero}</li>);
+    return(
+        <section>
+            <h1>영화 속 영웅들</h1>
+            <ul>
+                {listHeroes}
+            </ul>
+        </section>
+    )
+}
+```
+* 브라우저에서 출력을 확인해보면 정상적으로 출력되는 것을 확인할 수 있음
+* 하지만 콘솔에서 확인하면 다음과 같은 경고메시지를 확인할 수 있음
+* > Each child in a list should have a unique "key" prop.
+
+---
 ## 4월 1일(5주차)
 ### JSX로 마크업 작성하기
 * 태그(Tag)는 HTML과 같은 마크업에서 요소를 표시하기 위한 개별 기호를 의미함. `<div>`,`<li>` 등이 있음
