@@ -10,27 +10,32 @@ export const heroes = [
     {
         id: 0,
         casting: "스파이더맨",
-        name: "피터 파커"
+        name: "피터 파커",
+        power: 4
     },
     {
         id: 1,
         casting: "아이언맨",
-        name: "토니 스타크"
+        name: "토니 스타크",
+        power: 5
     },
     {
         id: 2,
         casting: "배트맨",
-        name: "브루스 웨인"
+        name: "브루스 웨인",
+        power: 3
     },
     {
         id: 3,
         casting: "슈퍼맨",
-        name: "클라크 켄트"
+        name: "클라크 켄트",
+        power: 5
     },
     {
         id: 4,
         casting: "헐크",
-        name: "로버트 브루스 배너"
+        name: "로버트 브루스 배너",
+        power: 4
     }
     ];
 ```
@@ -58,6 +63,32 @@ export default function MovieHeroes() {
     )
 }
 ```
+power가 5인 hero 모두 출력
+``` jsx
+import { heroes } from "./HeroesData";
+
+export default function MovieHeroes() {
+
+    const filterTests = heroes.filter(hero =>
+        // hero.name === "클라크 켄트",
+        hero.power === 5
+    );
+    const listHeroes = filterTests.map(hero => 
+        <li>
+            <p>
+                {hero.name}의 배역은 {hero.casting} 입니다.
+            </p>
+        </li>
+    );
+
+    return(
+        <section>
+            <h1>영화 속 영웅들</h1>
+            <ul>{listHeroes}</ul>
+        </section>
+    )
+}
+```
 * JavaScript만의 특이점 : `===` 는 `==`보다 더 강력한 Strick Equal Operator(엄격한 비교 연산자)로 피연산자의 값의 타입이 서로 다르면 변환하지 않고 그대로의 값을 비교하는 방식
 
 화살표 함수에 대하여
@@ -66,11 +97,140 @@ export default function MovieHeroes() {
 * => {}를 표현하는 화살표 함수를 "block body"를 가지고 있다고 함
 * 이 함수를 사용하면 한 줄 이상의 코드를 작성할 수 있지만, return 문을 반드시 작성해야 함
 * 그렇지 않으면 아무것도 반환되지 않음
+* 일반적으로 원데이터는 복수형(heroes)를 사용하고, 임시저장소는 원데이터의 단수형(hero)를 사용
 
+Key prop을 사용하는 이유
+* > Each child in a list should have a unique "key" prop.
+* 이 경고는 목록(배열)의 각 자식 요소는 고유한 'key' prop을 가져야 하는데 그렇게 설정되지 않아서 발생하는 경고
+* 배열의 각 항복은 다른 목록들과 명확히 구분되는 고유한 문자열 혹은 숫자를 key로 지정해야 함
+* 이것을 key prop라고 함
+* Key prop은 배열 중 어떤 자식 요소인지 확인할 수 있도록 함
+* 배열의 자식 요소가 정렬 등으로 인해 이동, 삽입, 삭제되어도 각 자식 요소를 구별하는데 중요하게 사용됨
+* Key prop은 즉석에서 생성하는 것이 아니고, 배열안에 포함되어 있어야 함
 
+프래그먼트와 key prop
+* 각 항목이 하나가 아닌 여러 개의 DOM 노드를 렌더링 해야하는 경우, 즉 반환해야 하는 태그가 여러개 있을 경우
+* 프래그먼트 `<>...</>`구문을 사용하거나, `<div>`태그 등으로 묶어서 하나로 노드로 만들어 반환해야 함
+* 그러나 프래그먼트 구문으로는 key를 전달할 수 없음
+* 이런 경우 `<div>` 등의 태그로 그룹화하거나, React에서 제공하는 `<Fragment>`컴포넌트를 사용해야함
+``` jsx
+import Fragment from React
 
+const listHeroes = filterTests.map (hero =>
+    <Fragment key={hero.id}>
+        <h1>{hero.name}</h1>
+        <p>{hero.casting}</p>
+    </Fragment>
+)
+```
 
+컴포넌트를 순수하게 유지하기
+* 순수 함수란
+    - 같은 입력 값을 넣으면 항상 같은 결과를 반환하는 함수
+    - 외부의 상태를 변경하지 않는, 즉 사이드 이펙트(side effect)가 없는 함수를 의미
+* 컴포넌트를 만들 때도 순수 함수로 만들면 사이드 이펙트가 없는 순수한 컴포넌트 완성
+* 코드베이서의 규모가 점점 커지더라도 예상밖의 동작이나 버그를 피할 수 있음
 
+순수함수로 구현되는 컴포넌트
+* 특징
+    1. 자신의 일에만 집중하고, 함수가 호출되기 전에 존재했던 어떤 객체나 변수도 변경하지 않는다
+    2. 같은 입력이 주어졌다면 순수 함수는 항상 같은 값을 반환
+* React에서 컴포넌트는 함수로 정의하기 때문에 순수함수로 작성된 컴포넌트는 순수 컴포넌트라고 할 수 있음
+
+``` jsx
+export default function OrderUp({order}) {
+    return(
+        <section>
+            <p>치즈버거 {order}개/콜라 {order}개 + (이벤트)프렌치 프라이 {2 * order}개</p>
+        </section>
+    )
+}
+```
+``` jsx
+import OrderUp from "./OrderUp";
+
+export default function Kiosk() {
+    return(
+        <section>
+            <h2>치즈버거 세트 메뉴를 주문하세요.</h2>
+            <p>일반세트 : </p>
+            <OrderUp order={1} />
+            <p>패밀리 세트 : </p>
+            <OrderUp order={2} />
+            <p>이용해 주셔서 감사합니다.</p>
+        </section>
+    )
+}
+```
+
+의도하지 않은 결과 사이드 이펙트
+* 잘못된 코드
+``` jsx
+/* eslint-disable */
+let guest = 0;
+
+function Cup() {
+    guest = guest + 1;
+    return <h2>Tea cup for guest #{guest}</h2>
+}
+
+export default function TeaSet() {
+    return(
+        <>
+            <Cup />
+            <Cup />
+            <Cup />
+        </>
+    )
+}
+```
+
+* 올바른 코드
+``` jsx
+function Cup({guest}) {
+    return <h2>Tea cup for guest #{guest}</h2>
+}
+
+export default function TeaSet() {
+    return(
+        <>
+            <Cup guest={1}/>
+            <Cup guest={2}/>
+            <Cup guest={3}/>
+        </>
+    )
+}
+```
+
+지역 변경(local mutation)
+* 잘못된 예제의 문제점은 컴포넌트가 외부에 있는 기존 변수를 렌더링 중에 변경했다는 것
+* 이런 사이드 이펙트를 "변경(Mutation)"라고 부르기도 함
+* 순수 함수는 함수 스코프 외부의 변수나 호출 전에 생성된 객체를 변경하지 않음
+* 그러나, 렌더링하는 동안에 생성된 변수와 객체를 변경하는 거슨 문제가 되지 않음
+
+* 자바스크립트의 push() 메서드는 배열의 맨 끝에 하나 이상의 요소를 추가하고, 배열의 새로운 길이(length)를 반환하는 함수
+```jsx
+function Cup({guest}) {
+    return <h2>Tea cup for guest #{guest}</h2>
+}
+
+export default function TeaGathering() {
+    const cups = [];
+    for (let i=1; i<=12; i++) {
+        cups.push(<Cup key={i} guest={i} />);
+    }
+    return cups;
+    // or return(<>{cups}</>)
+}
+```
+
+UI를 트리구조로 이해하기 - Render 트리
+* React를 비롯한 많은 UI 라이브러리는 UI를 트리의 형태로 모델링함
+* 애플리케이션을 트리로 생각하면 컴포넌트 간의 관계를 이해하는 데 도움이 됨
+* 또한 향후 성능이나 상태 관리와 같은 개념을 파악하는데도 도움이 됨
+* 트리는 요소 사이의 관계 모델이며, UI는 이 트리 구조를 사용하여 표현됨
+    - 브라우저는 HTML(DOM)과 CSS(CSSOM)을 모델링하기 위해 트리 구조를 사용
+    - 모바일 플랫폼에서도 뷰의 계층 구조를 나타내는 데 트리를 사용
 
 ---
 ## 4월 8일(6주차)
