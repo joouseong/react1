@@ -1,5 +1,78 @@
 # 주우성 202230236
 ---
+## 4월 15일(7주차)
+### 데이터 전달과 렌더링
+배열의 항목들을 필터링하기
+* 앞에서 사용한 heroes 데이터를 조금 수정하면 더욱 강력한 구조화가 가능
+* JavaScript의 filter() 함수를 사용하여 해당하는 배우의 정보만을 반환 가능
+``` jsx
+export const heroes = [
+    {
+        id: 0,
+        casting: "스파이더맨",
+        name: "피터 파커"
+    },
+    {
+        id: 1,
+        casting: "아이언맨",
+        name: "토니 스타크"
+    },
+    {
+        id: 2,
+        casting: "배트맨",
+        name: "브루스 웨인"
+    },
+    {
+        id: 3,
+        casting: "슈퍼맨",
+        name: "클라크 켄트"
+    },
+    {
+        id: 4,
+        casting: "헐크",
+        name: "로버트 브루스 배너"
+    }
+    ];
+```
+``` jsx
+import { heroes } from "./HeroesData";
+
+export default function MovieHeroes() {
+
+    const filterTests = heroes.filter(hero =>
+        hero.name === "클라크 켄트"
+    );
+    const listHeroes = filterTests.map(hero => 
+        <li>
+            <p>
+                {hero.name}의 배역은 {hero.casting} 입니다.
+            </p>
+        </li>
+    );
+
+    return(
+        <section>
+            <h1>영화 속 영웅들</h1>
+            <ul>{listHeroes}</ul>
+        </section>
+    )
+}
+```
+* JavaScript만의 특이점 : `===` 는 `==`보다 더 강력한 Strick Equal Operator(엄격한 비교 연산자)로 피연산자의 값의 타입이 서로 다르면 변환하지 않고 그대로의 값을 비교하는 방식
+
+화살표 함수에 대하여
+* 화살표 함수는 묵시적으로 => 바로 뒤에 있는 식을 반환하기 때문에 return문이 필요 없음
+* 그러나 => 뒤에 {} 중괄호가 오는 경우에는 return을 명시적으로 작성해야 함
+* => {}를 표현하는 화살표 함수를 "block body"를 가지고 있다고 함
+* 이 함수를 사용하면 한 줄 이상의 코드를 작성할 수 있지만, return 문을 반드시 작성해야 함
+* 그렇지 않으면 아무것도 반환되지 않음
+
+
+
+
+
+
+---
 ## 4월 8일(6주차)
 ### 데이터 전달과 렌더링
 조건부 렌더링
