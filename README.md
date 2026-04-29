@@ -123,7 +123,58 @@ export default function ButtonCom() {
 ```
 
 ### 이벤트와 상호작용
+개요
+* 화면을 구성하는 요소 중 사용자의 입력에 반응해 업데이트 되는 요소가 있음
+* 예를 들어 이미지 갤러리에서 특정 이미지를 클릭하면 해당 이미지는 활성 상태가 됨
+* 사용자의 클릭과 같은 특정 입력을 이벤트라고 하고, 이벤트가 발생했을 때 반응하는 로직을 이벤트 핸들러라고 함
 
+이벤트에 응답하기
+* React에서는 JSX 이벤트 핸들러를 추가할 수 있음
+* 이벤트 핸들러는 클릭, 마우스 호버(hover), 폼 입력의 포커스 등 사용자와의 상호작용에 따라 유발되는 사용자 정의 함수
+* `<button>`과 같은 내장 컴포넌트는 onClick과 같은 내장 브라우저 이벤트만 지원
+* 반면 사용자 정의 컴포넌트의 경우, 이벤트 핸들러 속성에 원하는 애플리케이션별 이름을 지정할 수도 있음
+
+이벤트 핸들러 추가하기
+* 이벤트 핸들러 추가를 위해서는 먼저 함수를 정의, 이를 적절한 JSX 태그에 prop 형태로 전달
+
+실습
+``` jsx
+import style from "./ButtonCom.module.css"
+
+function handleClick() {
+    alert("버튼 클릭")
+}
+
+export default function ButtonCom() {
+    return(
+        <>
+            <h1 className={style.title}>ButtonCom 컴포넌트</h1>
+            <nav className={style.navBar}>
+                <button onClick={handleClick} className={style.myButton}>버튼1</button>
+                <button onClick={handleClick} className={style.myButton}>버튼2</button>
+            </nav>
+        </>
+    )
+}
+```
+* 이벤트 핸들러의 이름은 handle로 시작하고, 이벤트명을 뒤에 붙이는 것이 관례
+* Ex : `onClick={handleClick}`, `onMouseEnter={handleMouseEnter}`
+
+이벤트 핸들러 인라인 스타일 정의
+* 이벤트 핸들러는 별도의 함수로 정의하는 것이 일반적이지만 JSX 내에 인라인으로 정의할 수 도 있음
+`<button onClick={() => {alert("버튼 클릭");}}>`
+* 하지만 인라인 스타일의 정의는 함수가 아주 짧을 때만 예외적으로 사용할 것을 권장
+* 가독성이 떨어지고, 재사용 및 모듈화에도 불편함
+
+이벤트 핸들러 함수의 전달?
+* 이벤트 핸들러 함수는 호출하는 것이 아니라 전달하는 것
+* 함수를 전달한다는 것은 다음과 같이 이름만 prop의 형태로 전달
+    * `<button onClick={handleClick}>`
+* 함수를 호출한다는 것은 함수의 이름에 소괄호를 함께 사용
+* 호출은 함수를 직접 사용한다는 것을 의미하기 때문에 잘못된 사용법
+    * `<button onClick={handleClick()}>` 은 잘못된 예
+* 인라인으로 코드를 작성할 때도 형태는 조금 차이가 있으나 동일한 문제 발생
+* 인라인으로 alert() 함수를 직접 호출하면 컴포넌트가 렌더링 될 때마다 실행됨
 
 
 ---
