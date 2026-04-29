@@ -37,6 +37,92 @@ UI를 트리 구조로 이해하기 - 모듈 의존성 트리
 * React에서 권장하는 방법은 CSS Module
 * 실무에서는 Tailwind + 일부 CSS Module 혹은 CSS Modules + SCSS의 조합으로 많이 사용
 
+일반 CSS
+* 가장 간단하게 사용할 수 있는 방법으로 HTML에서 CSS를 사용하는 방법과 동일
+* style.css 파일을 만들어서 필요한 스타일을 정의한 후 사용할 컴포넌트에서 import
+* 단, 속성의 이름으로 class가 아닌 className을 사용. 이 것은 모든 방법에서 동일하게 적용됨
+* 익숙한 방법이기 때문에 프로젝트에 빠르게 적용할 수 있음
+* 컴포넌트 단위로 관리하기 어렵고, 전역 스코프(global)의 클래스 이름과 충돌 가능성이 있기 때문에 주의해야 함
+
+인라인 스타일
+* HTML 에서도 인라인 스타일은 유지보수의 어려움 등의 단점이 있어 자주 사용하지 않음
+* 조건부 스타일에만 제한적으로 사용됨
+* 속성 이름은 kebab-case가 아닌 camelCase를 사용해야 함
+
+CSS-in-JS
+* 자바스크립트 코드 내에서 CSS를 직접 작성, 컴포넌트 단위로 스타일을 관리하는 방법
+* styled-components, emotion, JSS 등 외부 라이브러리를 사용
+* 스타일이 컴포넌트 내에 바인딩 되기 때문에 관리와 유지보수 용이
+* props를 기반으로 한 동적(조건부) 스타일링 적용에 매우 편리
+* 고유한 클래스명을 자동으로 생성하여 스타일의 충돌 방지
+* Provider 컴포넌트를 통해 전역 테마 설정
+
+CSS 프레임워크
+* 일반적으로 프론트엔드 개발에 많이 사용하는 방법
+* Tailwind CSS(클래스 단위), Bootstrap(컴포넌트 단위), bulma 등 유명한 CSS 프레임워크들이 있음
+* React에서 추천하는 Tailwind CSS는 클래스를 조합하여 스타일을 작성
+* 빠른 개발과 디자인의 일관성을 유지할 수 있다는 장점
+* 클래스를 조합하는 과정에서 클래스 선언이 길어지기 때문에 문서의 가독성이 떨어진다는 단점
+
+CSS Module
+* CSS Module은 클래스명을 `_[클래스이름]_[해쉬값]`의 형태로 자동 변환하여, 고유한 이름의 로컬 스코프(Local Scope)를 제공하는 기술
+* 컴포넌트 기반의 프레임워크인 React나 Vue 등에서 채택하고 있는 이 기술은 스타일의 충돌을 완벽하게 방지, 유지보수에도 유리
+* 컴포넌트 단위로 스타일링 한다는 것이 가장 큰 특징, 컴포넌트의 재사용에도 유리하게 작용
+* 일반 CSS의 문제점 중 하나인 전역으로 선언되기 대문에 다른 컴포넌트와 충돌의 위험이 있는 것을 CSS Module은 빌드 시 고유한 이름으로 변경되기 때문에 충돌의 위험이 없음
+
+CSS Module 사용 방법
+* 파일 이름의 규칙: 파일 이름은 [컴포넌트 이름].module.css의 형태
+* CSS 작성: <br>
+    * css의 내용은 일반 css의 작성법을 따름
+    * class 선택자로 스타일 선언
+    * Tag 선택자를 사용하는 것은 특별한 경우 아니면 권장하지 않음
+    * Tag 선택자는 CSS Module 빌드 시에 고유한 이름을 할당 받지 않고, 전역으로 사용되기 때문
+* 클래스에 적용하는 법:
+    * import의 변수명(로컬 식별자)은 관행적으로 style을 사용
+    * JSX에서는 class 키워드 대신 className 사용
+    * class 이름은 객체를 사용할 때처럼 [변수명].[클래스 명]의 형태로 작성
+    * class 이름 전체를 중괄호로 감싸줌
+* 여러 개의 클래스 적용 방법
+```
+<nav className={`${styles.toolBar} ${styles.active}`}>...</>
+```
+
+실습
+``` jsx
+import style from "./ButtonCom.module.css"
+
+export default function ButtonCom() {
+    return(
+        <>
+            <h1 className={style.title}>ButtonCom 컴포넌트</h1>
+            <nav className={style.navBar}>
+                <button className={style.myButton}>버튼1</button>
+                <button className={style.myButton}>버튼2</button>
+            </nav>
+        </>
+    )
+}
+```
+``` css
+.title {
+    font-size: 30px;
+    color: blue;
+}
+
+.navBar {
+    padding: 15px;
+    background-color: #ccc;
+    border: #000 1px solid;
+}
+
+.myButton {
+    margin-right: 10px;
+    background-color: green;
+    border-radius: 25px;
+}
+```
+
+### 이벤트와 상호작용
 
 
 
