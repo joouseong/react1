@@ -1,4 +1,133 @@
 # 주우성 202230236
+
+## 5월 6일(10주차)
+### 이벤트와 상호작용
+이벤트 핸들러에서 prop 사용하기 - 실습
+``` jsx
+import ButtonCom from "./ButtonCom";
+
+export default function ToolBar() {
+    return(
+        <>
+            <ButtonCom message="버튼1 클릭">
+                버튼1
+            </ButtonCom>
+            <ButtonCom message="버튼2 클릭">
+                버튼2
+            </ButtonCom>
+        </>
+    )
+}
+```
+``` jsx
+export default function ButtonCom({message, children}) {
+    function handleClick() {
+        alert(message)
+    }
+
+    return(
+        <button onClick={handleClick}>{children}</button>
+    )
+}
+```
+
+이벤트 핸들러를 prop으로 전달하기
+
+* 지금까지는 handleClick 이라는 하나의 이벤트 핸들러만 사용 <br>
+    → 버튼의 이름과 출력되는 문자열은 다르지만 하나의 로직에 의해서 출력된 것
+* 만일 각각의 버튼이 2가지 이상의 기능을 수행해야 한다면 이벤트 핸들러도 2개 이상이 필요하게 됨
+* 구현하는 방법은 여러가지.
+    1. 조건문을 사용하여 분기하면 쉽게 구현
+    2. 필요한 만큼 Button 컴포넌트를 만들 수 있음 <br>
+    → 이런 방법은 어떤 문제?
+
+다음과 같은 방법을 사용하면 관리도 쉽고 재사용도 편리한 컴포넌트를 만들 수 있음
+1. 버튼 컴포넌트는 출력만 담당하게
+2. 이벤트 핸들러는 별도의 파일에 모듈의 형태로 모아 관리
+3. 부모 컴포넌트에서 버튼 컴포넌트를 호출할 때 이벤트 핸들러를 함께 전달
+
+실습 1
+``` jsx
+export default function ButtonCom({handle, message, children, style}) {
+    return(
+        <button onClick={ () => handle({message})} className={style}>
+            {children}
+        </button>
+    )
+}
+```
+``` jsx
+import ButtonCom from "./ButtonCom";
+import handleClick from "./handle";
+import style from "./ButtonCom.module.css"
+
+export default function ToolBar() {
+    return(
+        <>
+            <ButtonCom message="버튼1 클릭" handle={handleClick} style={style.myButton}>
+                버튼1
+            </ButtonCom>
+            <ButtonCom message="버튼2 클릭" handle={handleClick} style={style.myButton}>
+                버튼2
+            </ButtonCom>
+        </>
+    )
+}
+```
+``` jsx
+export default function handleClick({message}) {
+    alert(message)
+}
+```
+
+실습 2
+* 버튼을 클릭하면 동영상이 재생되고, 정지하는 실제 동작을 하도록 수정
+* React의 state hook 등을 사용하면 간단하게 구현 가능
+* 하지만 아직 hook을 학습하지 않았기 때문에 순수 자바스크립트 만으로 구현
+``` jsx
+export function handlePlay({message}) {
+    const videoSource = document.getElementById(message);
+    if (videoSource) videoSource.play();
+}
+
+export function handleStop({message}) {
+    const videoSource = document.getElementById(message);
+    if (videoSource) videoSource.pause();
+}
+```
+``` jsx
+import ButtonCom from "./ButtonCom";
+import {handlePlay, handleStop} from "./handle";
+import style from "./ButtonCom.module.css"
+import sampleVideo from "../../assets/sample.mp4";
+
+export default function ToolBar() {
+    return(
+        <>
+            <nav>
+                <ButtonCom message="videoPlayer" handle={handlePlay} style={style.myButton}>
+                    Play
+                </ButtonCom>
+                <ButtonCom message="videoPlayer" handle={handleStop} style={style.myButton}>
+                    Stop
+                </ButtonCom>
+            </nav>
+            <br />
+            <section>
+                <video id="videoPlayer" src={sampleVideo} controls width="350" />
+            </section>
+        </>
+    )
+}
+```
+
+Note
+* document.getElementById(id)
+* HTML 문서에서 고유한 id 속성을 가진 요소를 찾아 JavaScript 객체로 반환하는 메서드
+* id 값을 따옴표로 감싸 매개변수로 전달, 요소가 없으면 null을 반환
+* 주로 HTML의 내용 변경, 스타일 수정 등 DOM 조작에 사용
+
+
 ---
 ## 4월 29일(9주차)
 ### 데이터 전달과 렌더링
@@ -175,7 +304,15 @@ export default function ButtonCom() {
     * `<button onClick={handleClick()}>` 은 잘못된 예
 * 인라인으로 코드를 작성할 때도 형태는 조금 차이가 있으나 동일한 문제 발생
 * 인라인으로 alert() 함수를 직접 호출하면 컴포넌트가 렌더링 될 때마다 실행됨
+    > `<button onClick={alert('You clicked me!')}>`
+* 만일 이벤트 핸들러를 인라인으로 정의하고 싶다면, 다음과 같이 익명 함수를 사용
+    > `<button onClick={ () => alert('You clicked me!') }>`
 
+Note
+* 컴포넌트에 데이터를 전달할 때 props를 사용했음
+* 이번 실습에서는 `<button>`태그에서 props 을 사용
+* 컴포넌트가 아닌 HTML태그에서 props를 사용
+* React에서는 button을 컴포넌트처럼 처리하면서 props를 넘기기 때문
 
 ---
 ## 4월 15일(7주차)
