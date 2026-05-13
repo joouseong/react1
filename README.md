@@ -19,6 +19,154 @@ Note
 * 💡모듈의 이름은 camelCase 사용, PascalCase는 컴포넌트에만 사용
 
 이벤트의 전파 - 실습
+``` jsx
+export default function Bubble() {
+    return (
+        <>
+            <h1 className={style.title}>Bubble</h1>
+            <nav className={style.navBar} onClick={() => alert("네비게이션바 클릭")}>
+                <button className={style.button} onClick={() => alert("버튼1 클릭")}>버튼1</button>
+                &nbsp;
+                <button className={style.button} onClick={() => alert("버튼2 클릭")}>버튼2</button>
+            </nav>
+        </>
+    )
+}
+```
+* 버튼1 클릭: "버튼1 클릭" => "네비게이션바 클릭"
+* 버튼2 클릭: "버튼2 클릭" => "네비게이션바 클릭"
+* 버튼이 아닌 네비게이션 영역 클릭: "네비게이션바 클릭"만 표시
+* 여기서 주목해야할 것: DOM 트리의 하위에 있는 `<button>`이 실행되면, 그 이벤트가 DOM 트리의 상위 즉, 부모에게 전달 됨
+
+이벤트 전파의 중지
+* 이벤트 핸들러는 이벤트 오브젝트(object)를 유일한 매개 변수로 사용
+* 관례적으로 이벤트 오브젝트를 의미하는 "event"를 "e"로 줄여 호출하는 것이 일반적
+* 이 오브젝트는 이벤트의 정보를 읽어 들이는데 사용할 수 있음
+* 또한 이벤트 오브젝트가 전파를 멈출 수 있게 해줌
+* 이벤트가 부모 컴포넌트에 닿지 못하도록 막으려면, 다음 예제처럼 Bubble 컴포넌트에 Button 컴포넌트를 추가하고, e.stopPropagation()을 호출
+``` jsx
+function Button({onClick, children}) {
+    return(
+        <button onClick={e => {
+            e.stopPropagation();
+            onClick();
+        }}>
+            {children}
+        </button>
+    )
+}
+```
+* 이제 버튼을 클릭하면 다음과 같은 절차 진행
+    1. React가 `<Button>`에 전달된 onClick 핸들러를 호출
+    2. Button 컴포넌트에 정의된 해당 핸들러는 다음을 수행
+        - e.stopPropagation()을 호출하여 이벤트가 더 이상 버블링 되지 않도록 방지
+        - Bubble 컴포넌트가 prop으로 전달해 준 onClick 함수 호출
+    3. Bubble 컴포넌트에서 정의된 onClick 이벤트 핸들러 함수가 버튼의 alert를 표시
+    4. 전파가 중단되었기 때문에 부모인 `<div>`의 onClick은 실행되지 않음
+* 💡event는 SyntheticEvent 클래스의 instance
+
+이벤트 전파의 중지 - 실습
+``` jsx
+function Button({onClick, children}) {
+    return(
+        <button className={style.button} onClick={e => {
+            e.stopPropagation();
+            onClick();
+        }}>
+            {children}
+        </button>
+    )
+}
+
+export default function Bubble() {
+    return (
+        <>
+            <h1 className={style.title}>Bubble</h1>
+            <nav className={style.navBar} onClick={() => alert("네비게이션바 클릭")}>
+                <Button onClick={() => alert("버튼1 클릭")}>버튼1</Button>
+                &nbsp;
+                <Button onClick={() => alert("버튼2 클릭")}>버튼2</Button>
+            </nav>
+        </>
+    )
+}
+```
+
+Note
+* Button 컴포넌트를 `<Button />`형태가 아닌 `<Button>...</Button>` 형태로 사용
+* 다음과 같이 `<Button />` 형태로 사용할 수도 있음
+``` jsx
+function Button({onClick, value}) {
+    return(
+        <button className={style.button} onClick={e => {
+            e.stopPropagation();
+            onClick();
+        }}>
+            {value}
+        </button>
+    )
+}
+
+export default function Bubble() {
+    return (
+        <>
+            <h1 className={style.title}>Bubble</h1>
+            <nav className={style.navBar} onClick={() => alert("네비게이션바 클릭")}>
+                <Button onClick={() => alert("버튼1 클릭")} value="버튼 1" />
+                &nbsp;
+                <Button onClick={() => alert("버튼2 클릭")} value="버튼 2" />
+            </nav>
+        </>
+    )
+}
+```
+
+브라우저 이벤트 기본 동작 방지하기 - 실습
+* 브라우저 이벤트 중에는 자신만의 기본 동작을 갖고 있는 것이 있음
+* 예를 들어 `<form>`을 제출하는 이벤트인 onSubmit 이벤트는 `<form>` 내부의 버튼을 클릭할 때 페이지 전체를 리로드하는 것을 기본 동작으로 함
+``` jsx
+export default function Signup1() {
+    return(
+        <form onSubmit={() => alert("Submitting!")}>
+            <input />
+            <button>Send1</button>
+        </form>
+    )
+}
+```
+* 리로드하는 기본 동작을 방지하는 코드
+``` jsx
+export default function Signup2() {
+    return(
+        <form onSubmit={e => {
+            e.preventDefault();
+            alert("Submitting!");
+        }}>
+            <input />
+            <button>Send2</button>
+        </form>
+    )
+}
+```
+
+e.stopPropagation()와 e.preventDefault()
+* 전파를 중지하는 데는 둘 다 유용하지만, 전혀 다른 기능임
+* e.stopPropagation()은 이벤트 핸들러가 상위 태그에서 실행되지 않도록 멈추는 기능
+* e.preventDefault()는 브라우저 기본 동작을 갖고 있는 일부 이벤트가 해당 기본 동작을 실행하지 않도록 방지하는 기능
+<br><br>
+* 이벤트 핸들러는 사이드 이펙트를 위한 최고의 위치
+* 함수를 렌더링 하는 것과 다르게 이벤트 핸들러는 순수할 필요가 없어 무언가를 변경하는데 최적의 위치
+* 예를 들어 타이핑에 반응해 입력 값을 수정, 버튼 클릭에 따라 리스트를 변경할 때 적절
+* 그러나 일부 정보를 수정하기 위해서는 먼저 그 정보를 저장하기 위한 수단이 필요
+* 이를 위해 React에서는 컴포넌트의 정보를 저장하는 역할을 하는 state Hook을 통해 제공
+
+State의 개념과 useState
+* State는 컴포넌트의 기억장소
+* 컴포넌트는 상호 작용의 결과로 화면의 내용을 변경해야 하는 경우가 많음
+* 컴포넌트는 현재 입력 값, 현재 이미지, 장바구니의 상태와 같은 것들을 어딘가에 기억해야 함
+* React는 이런 종류의 컴포넌트별 메모리를 state라고 부름
+
+
 
 
 ---
