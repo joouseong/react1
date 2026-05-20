@@ -1,5 +1,252 @@
 # 주우성 202230236
 
+## 5월 27일(13주차)
+### 이벤트와 상호작용
+State Hook의 동작 원리 - State Hook의 기본 동작 정리
+
+---
+## 5월 20일(12주차)
+### 이벤트와 상호작용
+로컬 변수에 컴포넌트 상태 저장 - 실습
+``` jsx
+import slider1 from "./localImg1.jpg";
+import slider2 from "./localImg2.jpg";
+
+export const slide = {
+    slider1,
+    slider2
+}
+```
+``` jsx
+import { slide } from "./images"
+
+export const galleryImages = [
+    {
+        name: "Slide 1",
+        artist: "Artist 1",
+        description: "Placeholder image for slide 1",
+        url: "https://placehold.co/600x400?text=slide1",
+        alt: "Slide 1",
+    },
+    {
+        name: "Slide 2",
+        artist: "Artist 2",
+        description: "Placeholder image for slide 2",
+        url: "https://placehold.co/600x400?text=slide2",
+        alt: "Slide 2",
+    },
+    {
+        name: "Slide 3",
+        artist: "Artist 1",
+        description: "Placeholder image for slide 3",
+        url: "https://placehold.co/600x400?text=slide3",
+        alt: "Slide 3",
+    },
+    {
+        name: "Slide 4",
+        artist: "Artist 4",
+        description: "Placeholder image for slide 4",
+        url: slide.slider1,
+        alt: "Slide 4",
+    },
+    {
+        name: "Slide 5",
+        artist: "Artist 5",
+        description: "Placeholder image for slide 5",
+        url: slide.slider2,
+        alt: "Slide 5",
+    },
+]
+```
+``` jsx
+import { galleryImages } from "./imgData";
+
+export default function Carousel() {
+    let index = 0;
+
+    function handleClick() {
+        index = index + 1;
+        console.log(index);
+    }
+
+    let slide = galleryImages[index];
+    return (
+        <>
+            <button onClick={handleClick}>Next</button>
+            <h2>
+                <i>{slide.name} </i>
+                by {slide.artist}
+            </h2>
+            <h3>
+                ({index + 1} of {galleryImages.length})
+            </h3>
+            <img src={slide.url} alt={slide.alt} />
+            <p>{slide.description}</p>
+        </>
+    )
+}
+```
+* VS code의 설정이나 사용하는 익스텐션에 따라서 다를 수 있지만 지금 작성한 Carousel에서는 다음과 같은 오류가 발생할 수 있음
+>(index):1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+
+* handleClick 이벤트 핸들러는 컴포넌트 스코프의 지역 변수 index를 업데이트 하고 있음
+* 하지만 이러한 index가 변해도 화면이 변하지 않는 이유는 두가지가 있음
+    1. 지역 변수는 렌더링과 렌더링 사이의 변화가 유지되지 않음. React는 이 컴포넌트를 두 번째로 렌더링할 때 지역 변수에 대한 변경 사항은 고려하지 않고 다시 처음부터 렌더링 함
+    2. 지역 변수에 변화가 있어도 React는 새로운 데이터로 컴포넌트를 다시 렌더링해야 한다는 것을 인식하지 못함. 즉 버튼 클릭으로 index가 1로 변겨오디어도, React는 index의 초기값 0을 적용
+
+State Hook에 컴포넌트 상태 저장하기
+* React에서는 현재의 상태를 보관할 수 있는 메모리를 제공. (State Hook)
+* State Hook을 사용하려면 React에서 useState를 import해야 함
+* 그 다음 변수로 선언했던 index를 state로 변경
+* index는 state 변수이고, setIndex는 state를 변경하는 setter 함수
+* Setter 함수의 이름은 일반적으로 변수 이름 앞에 set을 붙인 함수명을 사용
+* useState(0)은 현재 index의 초기값을 0으로 초기화 한 것
+
+실습
+* Carousel.jsx 수정
+``` jsx
+import { galleryImages } from "./imgData";
+import { useState } from "react";
+
+export default function Carousel() {
+    const [index, setIndex] = useState(0);
+
+    function handleClick() {
+        setIndex(index + 1);
+        console.log(index);
+    }
+
+    let slide = galleryImages[index];
+    return (
+        <>
+            <button onClick={handleClick}>Next</button>
+            <h2>
+                <i>{slide.name} </i>
+                by {slide.artist}
+            </h2>
+            <h3>
+                ({index + 1} of {galleryImages.length})
+            </h3>
+            <img src={slide.url} alt={slide.alt} />
+            <p>{slide.description}</p>
+        </>
+    )
+}
+```
+* 이미지는 index 1의 이미지가 렌더링 되지만 console을 보면 index 출력 값은 여전히 0인 상태
+* 초기 렌더링은 state의 초기값이 0이기 때문에 index 0의 이미지가 출력
+* 클릭을 하면 handleClick 함수는 setIndex에는 1을 더한 값이 저장되지만 console.log에서는 현재 index 값이 유지되기 때문
+
+* 클릭을 계속 진행하면 5번째 클릭에서 더 이상 화면이 렌더링 되지 않음
+* 기본적으로 React는 렌더링 중에 오류가 발생하면 화면에서 UI를 제거하기 때문에 나타나는 현상
+* 이때 console을 보면 다음과 같은 오류메세지 확인 가능
+> An error occurred in the <Carousel> component. <br>
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries.
+
+* 이 오류 메세지는 Carousel 컴포넌트에서 오류가 발생했는데 "오류 처리 동작을 사용자 지정하려면 트리에 error boundary를 추가" 하라는 것
+* 즉 빈화면이 아니라 error boundary를 이용해 오류메세지를 출력할 수 있도록 수정하라는 것
+
+실습
+* 이 오류는 index값이 galleryImages 배열의 길이인 5를 넘어서기 때문에 발생
+* 즉 index 값이 4를 넘지 않도록 수정하는 것으로 해결할 수 있음
+``` jsx
+import { galleryImages } from "./imgData";
+import { useState } from "react";
+
+export default function Carousel() {
+    const [index, setIndex] = useState(0);
+
+    function handleClick() {
+        if (index === galleryImages.length -1) {
+            setIndex(0);
+        } else {
+            setIndex(index + 1);
+            console.log(index);
+        }
+    }
+
+    let slide = galleryImages[index];
+    return (
+        <>
+            <button onClick={handleClick}>Next</button>
+            <h2>
+                <i>{slide.name} </i>
+                by {slide.artist}
+            </h2>
+            <h3>
+                ({index + 1} of {galleryImages.length})
+            </h3>
+            <img src={slide.url} alt={slide.alt} />
+            <p>{slide.description}</p>
+        </>
+    )
+}
+```
+
+실습 - Previous 버튼과 이벤트 핸들러를 추가해 캐러셀 완성하기
+``` css
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.button{
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+```
+``` jsx
+import { galleryImages } from "./imgData";
+import { useState } from "react";
+import style from "./Carousel.module.css"
+
+export default function Carousel() {
+    const [index, setIndex] = useState(0);
+
+    function handleNext() {
+        if (index === galleryImages.length -1) {
+            setIndex(0);
+        } else {
+            setIndex(index + 1);
+        }
+    }
+
+    function handlePrevious() {
+        if (index === 0) {
+            setIndex(galleryImages.length -1);
+        } else {
+            setIndex(index - 1);
+        }
+    }
+
+    let slide = galleryImages[index];
+    return (
+        <section className={style.wrapper}>
+            <h2>
+                <i>{slide.name} </i>
+                by {slide.artist}
+            </h2>
+            <h3>
+                ({index + 1} of {galleryImages.length})
+            </h3>
+            <img src={slide.url} alt={slide.alt} />
+            <br />
+            <button onClick={handlePrevious} className={style.button}>Previous</button>
+            <button onClick={handleNext} className={style.button}>Next</button>
+            <p>{slide.description}</p>
+        </section>
+    )
+}
+```
+
+---
 ## 5월 13일(11주차)
 ### 이벤트와 상호작용
 Note
@@ -174,8 +421,6 @@ State의 개념과 useState
 * 로컬 이미지를 호출하려면 각각의 이미지를 import 해야함
 * 이미지가 많은 경우 코드가 복잡해짐
 * 이미지 디렉토리 안에 index파일을 만들어 그 안에서 처리, 이미지를 사용하는 컴포넌트는 가독성을 높일 수 있음
-
-
 
 ---
 ## 5월 6일(10주차)
