@@ -1,8 +1,254 @@
 # 주우성 202230236
 
 ## 5월 27일(13주차)
+### React가 State를 강조하는 이유
+React에서 초보자가 가장 먼저 배워야 하는 것
+* JSX / Component / Props 그리고 State
+* 실제로 React를 React답게 만드는 것은 대부분 state
+
+기능 | React 없이도 가능?
+|---|---|
+컴포넌트 분리 | 가능
+함수 호출 | 가능
+템플릿 문자열 | 가능
+HTML 생성 | 가능
+state기반 재렌더링 | React 핵심
+
+* React의 핵심 철학 자체가 state 기반 UI이기 때문
+* React의 렌더링 모델 대부분이 state로 설명되기 때문
+* 다른 Hook들도 결국 state 문제를 해결하기 위한 도구이기 때문
+* React 팀이 "DOM 직접 조작" 보다 "상태 기반 사고"를 가장 중요하게 보기 때문
+* Effect 같은 핵심 모델이 아니라 예외 처리에 가깝기 때문
+
+* useState를 배우면 동시에: 렌더링 / 재렌더링 / 스냅샷 / 이벤트 핸들러 / JSX 재생성 / React의 함수 호출 방식 / 선언형 UI / Virtual DOM 과 같은 개념들이 연결되기 시작함
+* 반대로 useEffect 같은 것은 사실 React의 "핵심 철학"이라기보다 외부 시스템과 동기화하기 위한 예외 처리 장치에 가까움
+
+* 결국 나머지는 "state가 변하면 UI를 어떻게 유지할 것인가?"라는 문제를 해결하는 도구
+
+기능 | 하는 일
+|---|---|
+useState | State 저장
+useReducer | 복잡한 State 관리
+Context | State 공유
+useMemo | state 기반 계싼 최적화
+useEffect | state 변화 후 동작
+Suspense | 비동기 상태 처리
+Server Components | 상태 경계 최적화
+
 ### 이벤트와 상호작용
 State Hook의 동작 원리 - State Hook의 기본 동작 정리
+* React에서는 useState와 같이 "use"로 시작하는 모든 함수를 Hook이라고 함
+* Hook은 React가 오직 렌더링 중일 때만 사용할 수 있는 특별한 함수
+* Hook을 사용하면 다양한 React 기능을 "연결(hook into)"할 수 있음
+* useState는 React에서는 제공하는 여러가지 Hook 중 하나
+* Hook의 사용에는 몇가지 주의할 점이 있음
+    1. Hook을 사용하기 위해서는 일반 모듈과 마찬가지로 import 해서 사용
+    2. Hook은 컴포넌트의 최상위 수준 또는 사용자 정의 Hook에서만 호출할 수 있음
+    3. 조건문, 반복문 또는 기타 중첩 함수 내부에서는 Hook을 호출할 수는 없음
+* Hook은 함수의 형식을 취하고 있지만 "컴포넌트가 어떤 기능을 필요로 하는지 React에게 자신의 요구사항을 알려주는 선언문"으로 이해하는 것이 좋음
+
+* useState(0)는 문법적으로는 함수 호출
+* 그러나 React의 관점에서 보면 Hook의 사용은 "함수를 실행해서 값을 받아온다"는 의미 보다는 "이 컴포넌트는 state가 필요하다"라고 선언하는 것으로 이해하는 것이 좋음
+
+* useState를 호출하는 것은, React에 이 컴포넌트가 무언가를 기억하기를 원한다고 말하는 것
+> const [index, setIndex] = useState(0);
+* 이 경우 React가 index를 기억하기를 원한다는 선언
+* 변수 이름이 결정되면 setter함수의 이름은 변수이름 앞에 set을 붙여 지정하는 것이 관례적인 규칙
+* 원하는 이름을 사용할 수도 있지만 가독성을 현저히 떨어트리게 되기 때문에 이 규칙은 엄격하게 지키는 것이 좋음
+
+* 실제 작동 방식
+    1. 컴포넌트가 초기 렌더링
+    2. index의 초기값으로 useState를 사용해 0이 전달되었기 때문에 [0, setIndex]를 반환
+        - -> React는 0을 최신 state 값으로 기억
+    3. 사용자가 버튼을 클릭하면 setIndex(index + 1)을 호출
+        - -> 현재 index의 값은 0이기 때문에 setIndex(1)이 됨
+        - -> 이것은 React에 index의 값이 1이라는 것을 기억하게 하고, 두번째 렌더링을 함
+    4. React는 여전히 useState(0)을 보고 있지만, index가 1로 설정된 것을 기억하고 있기 때문에
+        - -> 이번에는 [1, setIndex]를 반환
+    5. 버튼을 클릭할 때 마다 이와 같은 동작이 반복
+
+State Hook의 동작 원리 - 여러 개의 state를 사용하기
+* 하나의 컴포넌트에서 사용할 수 있는 state 변수의 개수에는 제한이 없으며, 원하는 타입의 state 변수를 가질 수 있음
+* 하나의 컴포넌트에 두개 이상의 state 변수를 사용할 때가 있음
+* 이런 경우 변수들이 함꼐 변경해야 하는 경우가 자주 발생한다면, 변수는 하나로 합치는 것이 더 좋을 수도 있음
+* 예를 들어, 필드가 많은 폼의 경우 필드별로 state 변수를 사용하는 것보다 하나의 객체 state 변수를 사용하는 것이 더 편리
+
+실습
+1. 불린(Boolean) 타입의 State를 추가. 변수의 이름은 more
+2. 토글할 수 있는 handleClick 이벤트 핸들러 작성
+3. 버튼 추가, 클릭 이벤트에 handleMoreClick 핸들러 전달
+4. 버튼 라벨은 more의 값에 따라 Hide description / Show description 으로 변경
+5. More가 true면 description을 보여주고, false면 보이지 않게 함
+
+``` jsx
+import { galleryImages } from "./imgData";
+import { useState } from "react";
+import style from "./Carousel.module.css"
+
+export default function Carousel() {
+    const [index, setIndex] = useState(0);
+    // 1. 불린 타입의 State 추가(기본값은 닫혀있도록 false 설정)
+    const [more, setMore] = useState(false);
+
+    function handleNext() {
+        if (index === galleryImages.length -1) {
+            setIndex(0);
+        } else {
+            setIndex(index + 1);
+        }
+    }
+
+    function handlePrevious() {
+        if (index === 0) {
+            setIndex(galleryImages.length -1);
+        } else {
+            setIndex(index - 1);
+        }
+    }
+
+    // 2. 토글할 수 있는 이벤트 핸들러 작성
+    function handleMoreClick() {
+        setMore(!more); // 현재 상태의 반대 값으로 토글
+    }
+
+    let slide = galleryImages[index];
+    return (
+        <section className={style.wrapper}>
+            <h2>
+                <i>{slide.name} </i>
+                by {slide.artist}
+            </h2>
+            <h3>
+                ({index + 1} of {galleryImages.length})
+            </h3>
+            <img src={slide.url} alt={slide.alt} />
+            <p>
+                <button onClick={handlePrevious} className={style.button}>Previous</button>
+                <button onClick={handleNext} className={style.button}>Next</button>
+            </p>
+
+            {/* 3. 버튼 추가 및 handleMoreClick 핸들러 전달 */}
+            {/* 4. more 값에 따라 버튼 라벨 변경 (삼항 연산자 사용) */}
+            <button onClick={handleMoreClick}>
+                {more ? "Hide" : "Show"} description
+            </button>
+
+            {/* 5. more가 true일 때만 description을 보여줌 (단락 평가 && 사용) */}
+            {more && <p>{slide.description}</p>}
+        </section>
+    )
+}
+```
+
+실습 2
+* 루트 컴포넌트에 Carousel 컴포넌트를 두번 호출
+* 각각의 캐러셀 내부 버튼을 클릭하면 state가 각 컴포넌트에서 독립적으로 동작한다는 것을 알 수 있음
+* state는 렌더링된 화면에서 컴포넌트 객체에 지역적
+* 동일한 컴포넌트를 몇 번 중첩해서 렌더링해도 각 복사본은 완전히 격리된 state를 가짐
+* 어떤 컴포넌트의 state를 변경해도 다른 컴포넌트의 state에는 영향을 미치지 않음
+* 이것이 state 변수와 컴포넌트 상단에 선언한 일반 변수(로컬 변수)의 차이
+* Carousel 컴포넌트를 두 번 렌더링했기 때문에 각각의 컴포넌트 state는 별도로 저장됨
+* Props와는 달리 state는 선언한 컴포넌트 외에는 완전히 비공개
+
+* 부모 컴포넌트도 state를 변경할 수 없음
+* state의 이런 특성 때문에 다른 컴포넌트에 영향을 미치지 않고, 어떤 컴포넌트에서나 state를 추가하거나 제거할 수 있음
+* 만약 두 개의 캐러셀 state를 동기화하고 싶다면, 자식 컴포넌트에서 state를 제거하고, 가장 가까운 공통 부모 컴포넌트에 state를 추가하면 됨
+    - -> 이것을 컴포넌트 간 state 공유라고 함
+
+### State와 렌더링
+렌더링 과정의 3단계
+* React는 컴포넌트가 화면에 표시되기 전에 렌더링(rendering) 과정을 거치게 됨
+* 렌더링이 되는 프로세스를 이해하면 코드가 어떻게 실행되는지 이해하는데 도움이 됨
+* React와 렌더링 프로세스는 렌더링 트리거, 컴포넌트 렌더링, DOM에 커밋 등 3단계로 진행
+<br>
+<br>
+
+1단계 : 렌더링 트리거(Rendering Trigger)
+* 컴포넌트 렌더링이 일어나는 이유는 2가지
+1. 컴포넌트의 초기 렌더링인 경우
+    * 앱을 시작할 때는 초기 렌더링을 촉발시켜야 함. 이 과정을 렌더링 트리거라고 함
+    * 대상 DOM 노드와 함께 createRoot를 호출한 다음 해당 컴포넌트로 render 메서드를 호출하면 이 작업이 완료됨
+    ``` jsx
+    import { StrictMode } from 'react'
+    import { createRoot } from 'react-dom/client'
+    import App from './App.jsx'
+
+    createRoot(document.getElementById('root')).render(
+        <StrictMode>
+        <App />
+        </StrictMode>,
+    )
+    ```
+    * 위 코드는 main.jsx. Vite로 프로젝트를 생성한 경우 index.jsx의 역할을 main.jsx가 함
+    * id가 root인 엘리먼트 즉 DOM 노드를 createRoot()함수로 호출한 다음, render 메소드를 통해 App 컴포넌트를 호출하고 있음
+    * 이 작업이 초기 렌더링 작업
+    * createRoot(...).render(...) 메소드의 호출을 주석 처리하면 컴포넌트의 화면 출력이 사라짐
+
+2. 컴포넌트의 state가 업데이트된 경우
+    * 컴포넌트가 초기 렌더링 된 후에는 set 함수를 통해 state를 업데이트해서, 추가적인 렌더링을 촉발시킬 수 있음
+    * 컴포넌트의 state를 업데이트하면 자동으로 렌더링 큐(queue)에 추가되고, 순서대로 렌더링
+
+    [Note] StrictMode 컴포넌트
+    * StrictMode 컴포넌트는 개발 모드에서 애플리케이션의 잠재적인 버그와 부작용(Side Effects)을 조기에 발견할수 있도록 돕는 검사 도구
+    * 배포(Production) 환경에서는 전혀 영향을 주지 않는 안전장치
+    * 이중 렌더링 검사 / Effect 및 Ref 클린업 테스트 / 지원 중단된 API 경고 등
+
+    [Note] 렌더링 큐(Queue)
+    * 큐는 선입선출(FIFO: First In First Out) 자료구조
+    * 렌더링 큐는 렌더링 요청을 순서대로 보관했다가 가장 먼저 요청한 것부터 차례대로 처리 자료구조를 사용
+<br>
+<br>
+
+2단계 : 컴포넌트 렌더링
+* 1단계인 "렌더링 트리거" 직후 React는 컴포넌트를 호출해서 화면에 표시할 내용을 파악. 즉 "렌더링"은 React가 컴포넌트를 호출하는 것
+* 초기 렌더링에서 React는 루트 컴포넌트를 호출
+* 초기 렌더링 이후 React는 state 업데이트가 일어나면 렌더링을 촉발시킨 컴포넌트를 호출
+* 이 프로세스는 재귀적(Precursive)으로 발생
+* State의 업데이트가 발생한 컴포넌트가 다른 컴포넌트를 중첩하고 있다면, 해당 컴포넌트를 렌더링. 중첩되어 반환된 컴포넌트를 호출했는데 그 컴포넌트도 중첩되어 있다면 중첩이 띁날 때까지 렌더링은 계속됨
+* React에서 재귀적이라고 하는 것은 우리가 알고 있는 재귀 함수(recursive function)과는 조금 차이가 있음
+* 재귀 함수는 어떤 함수가 자기 자신을 다시 호출하는 것
+* React에서의 재귀적 렌더링은 특정 컴포넌트가 더 이상 다른 컴포넌트를 중첩(호출)하지 않을 때까지 렌더링을 반복하는 것
+<br>
+<br>
+
+3단계 : React가 DOM에 변경사항을 커밋
+* React는 컴포넌트를 렌더링(호출)한 후에 DOM을 수정
+* 초기 렌더링의 경우 appendChild() DOM API를 사용해, 생성한 모든 DOM 노드를 화면에 표시
+* 리렌더링의 경우 최신 렌더링의 출력과 일치하도록 DOM을 변경하기 위해 필요한 최소한의 작업을 적용.
+<br>
+<br>
+
+스냅샷처럼 동작하는 State
+* State 변수는 읽고 쓸 수 있는 일반 자바스크립트 변수처럼 보일 수 있음
+    - -> 그러나 State는 스냅샷처럼 동작
+* state 변수를 set함수로 업데이트해도 이미 가지고 있는 state 변수는 변경되지 않고, 대신 리렌더링이 촉발(트리거)됨
+* 컴포넌트의 state에서는 set함수의 호출이 트리거로 작용하여 렌더링이 이루어짐
+
+[Note] 스냅샷(Snapshot)
+* 스냅샷은 원래 자연스러운 순간이나 동작을 재빠르게 포착하여 찍은 사진을 의미
+* 그러나 IT 분야에서는 "특정 시간대의 데이터 및 파일 시스템 상태"를 그대로 기록해 두는 기술을 의미. 물론 필요한 시점에 기록해둔 스냅샷을 복원하는 것도 가능
+<br>
+<br>
+
+* "렌더링"이란 React가 컴포넌트(함수)를 호출한다는 뜻
+* 호출된 컴포넌트에서 반환하는 JSX는 특정 시점의 UI 스냅샷과 같은 것
+* prop, 이벤트 핸들러, 로컬 변수는 모두 렌더링 시점에 state를 사용해서 계산됨
+* React가 컴포넌트를 다시 렌더링되는 과정을 정리하면
+    1. 상호작용이 발생하면 React가 컴포넌트를 다시 호출, 스냅샷을 계산
+    2. 컴포넌트가 새로운 JSX 스냅샷을 반환
+    3. React는 컴포넌트가 반환한 스냅샷과 일치하도록 화면을 업데이트. 즉, DOM tree를 업데이트
+    4. 새로운 state로 이벤트 핸들러를 생성하고 다음 상호작용을 기다림
+<br>
+<br>
+
+* state는 컴포넌트의 메모리로 동작하기 때문에, 보통의 함수가 반환된 후 사라지는 일반 변수와는 다름
+* state는 컴포넌트 내부에 있는 것이 아닌 React 내부에 존재
+* React가 컴포넌트를 호출하면 특정 렌더링에 대한 state의 스냅샷을 제공
+* 스냅샷을 제공받은 컴포넌트는 해당 렌더링의 state 값으로 계산된 새로운 props 세트와 이벤트 핸들러가 포함된 UI 스냅샷을 JSX에 반환
+* 상호작용이 발생하면 state는 다음과 같은 작업을 수행
+    1. React에 state를 업데이트하라고 명령
+    2. React가 state 값을 업데이트
+    3. React는 업데이트된 state 값의 스냅샷을 컴포넌트에 전달
 
 ---
 ## 5월 20일(12주차)
