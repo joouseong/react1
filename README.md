@@ -1,5 +1,145 @@
 # 주우성 202230236
 
+## 6월 5일(14주차)
+### State와 렌더링
+
+스냅샷처럼 동작하는 State - 실습
+``` jsx
+import { useState } from "react";
+
+export default function BtnClick() {
+    const [number, setNumber] = useState(0);
+
+    function handleIncrease3 () {
+        setNumber(number + 1);
+        console.log(number)
+        setNumber(number + 1);
+        console.log(number)
+        setNumber(number + 1);
+        console.log(number)
+    }
+    function handleIncrease5 () {
+        setNumber(number + 5);
+        console.log(number)
+        alert(number);
+        console.log(number)
+    }
+    function handleTimer() {
+        setNumber(number + 5);
+        console.log(number)
+        setTimeout(() => { // 많이쓰는 함수
+            alert(number);
+        }, 1000);
+        console.log(number)
+    }
+
+    return(
+        <>
+            <h1>{number}</h1>
+            <button onClick={handleIncrease3}>+3</button>&nbsp;
+            <button onClick={handleIncrease5}>+5</button>&nbsp;
+            <button onClick={handleTimer}>Timer</button>
+        </>
+    )
+}
+```
+* React에 저장된 state는 alert 창이 실행될 때 변경될 수 있음
+* 그러나 사용자가 상호작용한 시점에 이전에 저장되어 있던 state 스냅샷을 사용
+* 이것은 이전의 스냅샷이 저장되는 순간 이미 예약된 작업
+* 이벤트 핸들러의 코드가 비동기식이라도 렌더링하는 동안 state 변수 값은 절대 변경되지 않음
+* 해당 렌더링의 onClick 내에서, setNumber(number + 5)가 호출된 후에도 number의 값은 계속 0
+* 이 값은 컴포넌트를 호출해 React가 UI의 "스냅샷을 찍을" 때 고정된 값
+* React는 렌더링의 이벤트 핸들러 안에서 state 값을 "고정"으로 유지함
+
+React state 업데이트의 배치처리
+* set함수로 state 변수를 저장하면 새로운 렌더링이 큐에 들어감
+* 그러나 경우에 따라서는 렌더링을 큐에 넣기 전에, state 변수 값에 몇 가지 작업을 수행하고 싶을 때도 있음
+* 이런 경우를 대비해 React가 state 업데이트를 어떻게 배치처리(batches, 일괄처리)하는지를 이해하는 것이 도움이 됨
+* 이전 실습에서 확인한 바와 같이 각 렌더링의 state 값은 고정되어있음
+* 따라서 setNumber(number + 1)을 계속 호출한다 하더라도 number 값은 항상 0
+<br>
+<br>
+* 그러나 React는 이벤트 핸들러의 모든 코드가 실행될 때까지 state를 업데이트하지 않고 대기
+* 따라서 setNumber() 호출이 모두 완료된 이후에만 리렌더링이 일어남
+* 여기서 렌더링의 의미를 화면에표시되는 것으로 생각하면 안됨
+    * -> "렌더링 과정의 3단계"에서 설명한 바와 같이 렌더링은 계산하는 단계
+* React는 이와 같은 프로세스로 동작하기 때문에 불필요하게 많은 트리거의 발생 없이 복수의 state변수를 업데이트할 수 있게 됨
+* 이 프로세스를 배칭(batching)이라고 함
+<br>
+<br>
+* 흔한 사례는 아니지만, 다음 렌더링을 하기 전에 동일한 state변수를 여러 번 업데이트 하고 싶은 경우
+* 이런 경우 setNumber(number + 1)과 같이 다음 state 값을 전달하는 대신, setNumber(n +> n + 1)과 같이 큐에서 하나 전 state를 기반으로 다음 state를 계산하는 함수를 전달할 수 있음
+* 이것은 단순히 state 값을 대체하는 것이 아닌, React에게 "이 state 값을 이렇게 처리해" 라고 지시하는 방법
+
+큐에서 하나 전의 state로, 다음 state를 계산하는 컴포넌트 제작 - 실습
+``` jsx
+import { useState } from "react";
+
+export default function BtnClick() {
+    const [number, setNumber] = useState(0);
+
+    function handleIncrease3 () {
+        setNumber(n => n + 1);
+        console.log(number)
+        setNumber(n => n + 1);
+        console.log(number)
+        setNumber(n => n + 1);
+        console.log(number)
+    }
+    return(
+    <>
+        <h1>{number}</h1>
+        <button onClick={handleIncrease3}>+3</button>&nbsp;
+    </>
+    )
+}
+```
+* 여기서 n => n + 1 은 업데이터 함수(updater function)라고 부름
+* 이 업데이터 함수를 set함수에 전달할 때 React는 다음과 같이 동작
+    1. React는 이벤트 핸들러의 다른 코드가 모두 실행된 후에 이 함수가 처리되도록 큐에 넣음
+    2. React는 큐를 순화하며 렌더링을 진행, 최종 업데이트된 state를 제공
+    3. 이렇게 저장된 새로운 state는 다음 렌더링에 사용
+* console에서는 3개의 0이 출력, 초기값을 출력하기 때문
+
+[Note] 화살표 함수의 축약
+* setNumber(n => n + 1)의 n => n + 1 은 화살표 함수가 축약된 표현
+* 화살표 함수 전체를 표기하면 (n) => {return n + 1;}와 같이 작성
+* 여기서 매개변수가 하나이면 소괄호()를 생략할 수 있음
+* 그리고 실행문이 하나이고, return만 하는 경우 return 키워드와 중괄호{}를 생략할 수 있음
+* 결과적으로 n => n + 1 과 같이 축약해서 사용할 수 있음
+
+[Note] number를 n으로 사용한 이유
+* state 변수로 선언된 number대신 set함수에서 n으로 사용하는 것은 둘을 구분하기 위한 것
+* number 변수는 렌더링 후 최종적으로 결정된 값을 저장하는 반면, n은 업데이터 함수 내에서 지역적으로 사요되는 것임을 분명히 하기 위함
+* 이렇게 구분하여 사용하면 가독성에도 유리
+* 물론 n이 아닌 number를 그대로 사용해도 상관없지만 React에서는 구분하여 사용할 것을 권장
+* React에서 권장하는 업데이터 함수의 명명규칙은 해당 state 변수의 첫 글자로 지정하는 것
+
+### React 프로젝트 배포하기(feat. GitHub)
+GitHub Pages 기본 저장소란?
+* GitHub Pages를 운영하려면 먼저 GitHub Pages 저장소를 생성해야 함
+* 생성방법은 일반 저장소 생성과 동일, 저장소 이름은 도메인 형태로 해야함
+
+* 또한 최상위 도메인 부분은 .com이 아닌 .io로 해야함
+    > `<My GitHub ID>.github.io`
+* GitHub에서 직접 저장소를 만들었다면 clone해서 local에서 작업하고 push
+* 처음부터 저장소를 local에 만들었다면 그대로 push(추천)
+
+React 프로젝트 배포하기
+* GitHub에 joouseong.github.io라는 저장소가 있다면 삭제
+* React 프로젝트를 joouseong.github.io라는 이름으로 새로 만들고, git으로 초기화
+* commit 후 public으로 push
+* npm i ph-pages 로 인스톨
+* package.json에서 맨 위에 "homepage": "https://My-GitHub-ID.github.io", 와
+* "script"에 "predeploy": "npm run build", "deploy": "gh-pages -d dist" 추가
+* GitHub리포지토리 페이지에서 setting->pages->Branch를 gh-pages로 변경
+* npm run deploy를 터미널에서 사용하면 배포 완료
+* 코드가 수정되고 다시 npm run deploy로 재배포
+
+### 객체,배열 State
+공식 문서 참고(https://ko.react.dev/learn/updating-objects-in-state)
+
+---
 ## 5월 27일(13주차)
 ### React가 State를 강조하는 이유
 React에서 초보자가 가장 먼저 배워야 하는 것
